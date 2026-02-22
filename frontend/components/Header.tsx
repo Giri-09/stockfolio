@@ -73,7 +73,7 @@ export default function Header({
                 clipRule="evenodd"
               />
             </svg>
-            <span className="hidden lg:inline text-sm">Refresh</span>
+            <span className="hidden lg:inline text-sm">Refresh{isLoading ? "ing..." : ""}</span>
           </button>
         </div>
       </div>
