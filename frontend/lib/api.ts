@@ -8,7 +8,7 @@ export async function fetchPortfolio() {
 }
 
 export async function refreshPortfolio() {
-  await axios.get(`${API}/portfolio/refresh`);
-  const { data } = await axios.get(`${API}/portfolio`);
+  await axios.get(`${API}/api/portfolio/refresh`);
+  const { data } = await axios.get(`${API}/api/portfolio`);
   return data;
 }
