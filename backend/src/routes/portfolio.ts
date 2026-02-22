@@ -156,7 +156,7 @@ router.get("/holdings", (req, res) => {
 // GET /api/portfolio/refresh - Force refresh (clears cache)
 router.get("/refresh", async (req, res) => {
   cache.flushAll();
-  res.json({ message: "Cache cleared. Next request will fetch fresh data." });
+  res.status(200).set("Cache-Control", "no-store").json({ message: "Cache cleared.", timestamp: Date.now() });
 });
 
 export default router;
