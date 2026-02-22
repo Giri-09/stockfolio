@@ -1,6 +1,21 @@
 import axios from "axios";
+import https from "https";
 import * as cheerio from "cheerio";
 import cache from "./cache.js";
+
+// Reuse connections across requests
+const agent = new https.Agent({ keepAlive: true, maxSockets: 15 });
+
+async function fetchWithRetry(url: string, options: any, retries = 1): Promise<any> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await axios.get(url, options);
+    } catch (err: any) {
+      if (attempt === retries) throw err;
+      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+    }
+  }
+}
 
 // Scrape P/E Ratio from Google Finance
 // Google Finance doesn't show EPS directly, so we derive it: EPS = CMP / P/E
@@ -12,13 +27,14 @@ export async function getGoogleFinanceData(googleSymbol: string) {
   try {
     const url = `https://www.google.com/finance/quote/${googleSymbol}`;
 
-    const { data: html } = await axios.get(url, {
+    const { data: html } = await fetchWithRetry(url, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept-Language": "en-US,en;q=0.9",
       },
-      timeout: 10000,
+      timeout: 5000,
+      httpsAgent: agent,
     });
 
     const $ = cheerio.load(html);

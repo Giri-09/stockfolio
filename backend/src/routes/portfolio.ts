@@ -22,24 +22,45 @@ router.get("/", async (req, res) => {
       0
     );
 
-    // 2. Fetch all CMPs from Yahoo Finance in batch
+    // 2. Fetch CMPs from Yahoo AND P/E data from Google concurrently
+    //    Google scrapes that don't need CMP (for P/E) can start immediately.
+    //    EPS derivation (CMP/PE) happens after both resolve.
     const yahooSymbols = holdings.map((h) => h.yahooSymbol);
-    const cmpMap = await getBatchCMP(yahooSymbols);
 
-    // 3. Fetch P/E and Earnings from Google Finance (pass CMP to derive EPS)
-    const pePromises = holdings.map((h) =>
-      getPEAndEarnings(h.googleSymbol, cmpMap[h.yahooSymbol] ?? null)
-    );
-    const peResults = await Promise.all(pePromises);
+    const [cmpMap, googleResults] = await Promise.all([
+      // Yahoo Finance — all symbols in parallel
+      getBatchCMP(yahooSymbols),
+      // Google Finance — all symbols in parallel (just fetches P/E, no CMP needed yet)
+      Promise.all(
+        holdings.map((h) =>
+          (async () => {
+            const { peRatio } = await getPEAndEarnings(h.googleSymbol, null);
+            return { googleSymbol: h.googleSymbol, peRatio };
+          })()
+        )
+      ),
+    ]);
 
-    // 4. Build enriched stock data
-    const stocks = holdings.map((h, i) => {
+    // Build a quick lookup for Google results
+    const googleMap: Record<string, number | null> = {};
+    for (const g of googleResults) {
+      googleMap[g.googleSymbol] = g.peRatio;
+    }
+
+    // 3. Build enriched stock data — derive EPS now that we have both CMP and P/E
+    const stocks = holdings.map((h) => {
       const investment = h.purchasePrice * h.qty;
       const cmp = cmpMap[h.yahooSymbol] ?? null;
       const presentValue = cmp !== null ? cmp * h.qty : null;
       const gainLoss = presentValue !== null ? presentValue - investment : null;
       const gainLossPercent =
         gainLoss !== null ? (gainLoss / investment) * 100 : null;
+
+      const peRatio = googleMap[h.googleSymbol] ?? null;
+      let latestEarnings: number | null = null;
+      if (cmp !== null && peRatio !== null && peRatio > 0) {
+        latestEarnings = parseFloat((cmp / peRatio).toFixed(2));
+      }
 
       return {
         name: h.name,
@@ -57,13 +78,13 @@ router.get("/", async (req, res) => {
           gainLossPercent !== null
             ? parseFloat(gainLossPercent.toFixed(2))
             : null,
-        peRatio: peResults[i].peRatio,
-        latestEarnings: peResults[i].latestEarnings,
+        peRatio,
+        latestEarnings,
         sector: h.sector,
       };
     });
 
-    // 5. Group by sector
+    // 4. Group by sector
     const sectorMap: Record<string, any[]> = {};
     for (const stock of stocks) {
       if (!sectorMap[stock.sector]) sectorMap[stock.sector] = [];
@@ -98,7 +119,7 @@ router.get("/", async (req, res) => {
       };
     });
 
-    // 6. Portfolio totals
+    // 5. Portfolio totals
     const totalPresentValue = stocks.reduce(
       (s, st) => s + (st.presentValue ?? 0),
       0
@@ -128,9 +149,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /api/portfolio/refresh - Force refresh (clears cache)
+// GET /api/portfolio/refresh - Force refresh (clears only the full portfolio cache)
+// Keeps per-symbol caches intact so the next request can reuse them
 router.get("/refresh", async (req, res) => {
-  cache.flushAll();
+  cache.del("portfolio_full");
   res.status(200).set("Cache-Control", "no-store").json({ message: "Cache cleared.", timestamp: Date.now() });
 });
 
