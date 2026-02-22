@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import cache from "./cache";
+import cache from "./cache.js";
 
 // Scrape P/E Ratio from Google Finance
 // Google Finance doesn't show EPS directly, so we derive it: EPS = CMP / P/E

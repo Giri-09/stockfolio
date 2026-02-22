@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import portfolioRoutes from "./routes/portfolio";
+import portfolioRoutes from "./routes/portfolio.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;

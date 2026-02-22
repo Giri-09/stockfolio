@@ -1,5 +1,5 @@
 import axios from "axios";
-import cache from "./cache";
+import cache from "./cache.js";
 
 const YAHOO_BASE = "https://query1.finance.yahoo.com/v8/finance/chart";
 

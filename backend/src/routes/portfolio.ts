@@ -1,8 +1,8 @@
 import { Router } from "express";
-import holdings from "../data/holdings";
-import { getBatchCMP } from "../services/yahooFinance";
-import { getPEAndEarnings } from "../services/googleFinance";
-import cache from "../services/cache";
+import holdings from "../data/holdings.js";
+import { getBatchCMP } from "../services/yahooFinance.js";
+import { getPEAndEarnings } from "../services/googleFinance.js";
+import cache from "../services/cache.js";
 
 const router = Router();
 
