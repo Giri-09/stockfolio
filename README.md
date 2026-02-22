@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stocks Portfolio Tracker
+
+A real-time stock portfolio dashboard that tracks Indian stock holdings across sectors with live market data from Yahoo Finance and Google Finance.
+
+Built with **Next.js 16** (frontend) and **Express + TypeScript** (backend).
+
+## Features
+
+- Live CMP (Current Market Price) from Yahoo Finance
+- P/E ratios scraped from Google Finance with derived EPS
+- Sector-wise grouping with gain/loss summaries
+- Portfolio-level totals and percentage breakdowns
+- Manual refresh with smart cache invalidation
+- Responsive dark-themed UI
+
+## Tech Stack
+
+| Layer    | Tech                                           |
+| -------- | ---------------------------------------------- |
+| Frontend | Next.js 16, React 19, TailwindCSS 4, Recharts |
+| Backend  | Express, TypeScript, Cheerio, Axios            |
+| Caching  | node-cache (in-memory)                         |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm / yarn / pnpm
+
+### 1. Clone the repo
+
+```bash
+git clone <repo-url>
+cd stocks-portfolio
+```
+
+### 2. Backend setup
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file (optional):
+
+```env
+PORT=5000
+```
+
+Start the backend:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The API will be available at `http://localhost:5000/api/portfolio`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Frontend setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd frontend
+npm install
+```
 
-## Learn More
+Create a `.env.local` file:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Start the frontend:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Endpoints
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Method | Endpoint                 | Description                                          |
+| ------ | ------------------------ | ---------------------------------------------------- |
+| GET    | `/api/portfolio`         | Full portfolio data with live CMP, P/E, and earnings |
+| GET    | `/api/portfolio/refresh` | Clears portfolio cache and returns fresh data         |
+| GET    | `/api/health`            | Health check                                         |
+
+## Project Structure
+
+```
+stocks-portfolio/
+├── backend/
+│   └── src/
+│       ├── index.ts              # Express server entry
+│       ├── routes/portfolio.ts   # Portfolio API routes
+│       ├── services/
+│       │   ├── yahooFinance.ts   # Yahoo Finance CMP fetcher
+│       │   ├── googleFinance.ts  # Google Finance P/E scraper
+│       │   └── cache.ts         # In-memory cache (node-cache)
+│       └── data/holdings.ts     # Stock holdings data
+├── frontend/
+│   ├── app/page.tsx             # Main dashboard page
+│   ├── components/              # UI components
+│   └── lib/
+│       ├── api.ts               # API client
+│       └── utils.ts             # Utility functions
+```
