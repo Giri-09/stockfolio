@@ -67,8 +67,8 @@ export default function Home() {
         isLoading={loading}
       />
 
-      <main className="relative z-10 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full sm:max-w-[97%] md:max-w-[95%] lg:max-w-[90%] xl:max-w-[86%] 2xl:max-w-[82%] px-4 sm:px-6 py-4 sm:py-6">
+      <main className="relative z-10 flex-1 overflow-y-auto flex flex-col">
+        <div className="flex-1 mx-auto w-full sm:max-w-[97%] md:max-w-[95%] lg:max-w-[90%] xl:max-w-[86%] 2xl:max-w-[82%] px-4 sm:px-6 py-4 sm:py-6">
           {loading && !data ? (
             <LoadingState />
           ) : error && !data ? (
