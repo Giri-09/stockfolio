@@ -128,31 +128,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /api/portfolio/holdings - Just the static holdings data (no live data)
-router.get("/holdings", (req, res) => {
-  const totalInvestment = holdings.reduce(
-    (sum, h) => sum + h.purchasePrice * h.qty,
-    0
-  );
-
-  const data = holdings.map((h) => {
-    const investment = h.purchasePrice * h.qty;
-    return {
-      name: h.name,
-      purchasePrice: h.purchasePrice,
-      qty: h.qty,
-      investment,
-      portfolioPercent: parseFloat(
-        ((investment / totalInvestment) * 100).toFixed(1)
-      ),
-      exchange: h.exchange,
-      sector: h.sector,
-    };
-  });
-
-  res.json({ holdings: data, totalInvestment });
-});
-
 // GET /api/portfolio/refresh - Force refresh (clears cache)
 router.get("/refresh", async (req, res) => {
   cache.flushAll();
